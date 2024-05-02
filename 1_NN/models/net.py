@@ -29,10 +29,10 @@ class Net(nn.Module):
         # add dropout layer
         x = self.dropout(x)
         # add 1st hidden layer, with relu activation function
-        target1 = self.fc1(x)
-        x = F.relu(target1)
+        x = self.fc1(x)
+        x = F.relu(x)
         # add dropout layer
         x = self.dropout(x)
         # add 2nd hidden layer, with relu activation function
         x = self.fc2(x)
-        return target1, x
+        return x

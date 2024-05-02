@@ -27,11 +27,11 @@ VAL_SPLIT = 0
 def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file): 
     torch.manual_seed(0)
 
-    train_loader, test_loader, num_classes, num_channels = get_data('/data/neelesh/CV_Datasets', dataset, VAL_SPLIT)
+    train_loader, test_loader, num_classes, num_channels = get_data('/data3/neelesh/CV_Datasets', dataset, VAL_SPLIT)
     train_data, train_target = split(train_loader)
     test_data, test_target = split(test_loader)
     
-    base_model = select_model(model)(num_classes, num_channels)
+    base_model = select_model(model)()
     base_model.load_state_dict(torch.load(f'../0_RES/1_NN/{model}-{dataset}.pth', map_location=torch.device('cpu')))
     base_model.eval()
 

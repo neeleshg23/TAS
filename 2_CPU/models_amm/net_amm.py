@@ -29,7 +29,7 @@ def im2col(input_data, kernel_size, stride, pad):
     return col
 
 class Net_AMM:
-    def __init__(self, block, num_blocks, state_dict, ncodebook=[1]*5, kcentroid=[4]*5):
+    def __init__(self, state_dict, ncodebook=[1]*5, kcentroid=[4]*5):
         self.n = ncodebook
         self.k = kcentroid
         
