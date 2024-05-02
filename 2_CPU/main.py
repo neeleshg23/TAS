@@ -86,12 +86,12 @@ def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file):
     # save results
     with open(config_file, 'r') as file:
         config = json.load(file)
-    config['nn_train_accuracy'] = train_accuracy
-    config['nn_test_accuracy'] = test_accuracy
-    config['amm_train_accuracy'] = train_accuracy_amm
-    config['amm_test_accuracy'] = test_accuracy_amm
-    config['train_mse'] = train_mse
-    config['test_mse'] = test_mse
+    config['nn_train_accuracy'] = float(train_accuracy)
+    config['nn_test_accuracy'] = float(test_accuracy)
+    config['amm_train_accuracy'] = float(train_accuracy_amm)
+    config['amm_test_accuracy'] = float(test_accuracy_amm)
+    config['train_mse'] = [float(x) for x in train_mse]
+    config['test_mse'] = [float(x) for x in test_mse]
     with open(config_file, 'w') as file:
         json.dump(config, file, indent=4)
 #%%
