@@ -111,8 +111,10 @@ class Net_AMM:
     
     def linear_amm(self, input_data, weights, bias, target):
         target = torch.from_numpy(target).float()
+        input_data = torch.from_numpy(input_data).float()
         weights, bias = self.fine_tune_fc_layer(input_data, weights, bias, target, epoch=300, lr=0.001)
         est = PQMatmul(self.n.pop(0), self.k.pop(0))
+        input_data = input_data.detach().numpy()
         est.fit(input_data, weights)
         est.reset_for_new_task()
         est.set_B(weights)
@@ -127,7 +129,7 @@ class Net_AMM:
         return res
     
     def dropout(self, input, p):
-        binary_value = cp.random.rand(*input.shape) > p
+        binary_value = np.random.rand(*input.shape) > p
         res = input * binary_value
         res /= p
         return res
@@ -200,11 +202,12 @@ class Net_AMM:
         out = self.dropout(out, 0.25)
         
         est = self.amm_estimators.pop(0) 
-        out = self.linear_amm(est, out, self.fc2_weights.T, self.fc2_bias)
+        out = self.linear_eval(est, out, self.fc2_weights.T, self.fc2_bias)
         
         return out
     
     def fine_tune_fc_layer(self, new_input, weight, bias, target, epoch=300, lr=0.001):
+        
         linear_layer = nn.Linear(weight.shape[0], weight.shape[1])
        
         weight_torch = torch.from_numpy(weight).float().t() # also transpose the weight matrix 

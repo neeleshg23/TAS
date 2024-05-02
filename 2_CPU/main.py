@@ -41,7 +41,7 @@ def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file):
     test_fc1_target, test_fc2_target = base_model(test_data)
     
     print("-- Starting Training -- ") 
-    train_res_amm = model_amm.forward_train(train_data, np.asarray(test_fc1_target.detach().numpy()), np.asarray(test_fc2_target.detach().numpy())) 
+    train_res_amm = model_amm.forward_train(train_data, np.asarray(train_fc1_target.detach().numpy()), np.asarray(train_fc2_target.detach().numpy())) 
     
     print("-- Starting Evaluation -- ")
     test_res_amm = model_amm.forward_eval(test_data)
