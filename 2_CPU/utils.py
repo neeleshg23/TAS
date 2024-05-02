@@ -1,5 +1,7 @@
 from models_amm.resnet_amm import resnet14_AMM, resnet18_AMM, resnet34_AMM 
 from models.resnet import resnet14, resnet18, resnet34
+from models.net import Net
+from models_amm.net_amm import Net_AMM
 
 def select_model(name):
     if name == 'r14':
@@ -8,6 +10,8 @@ def select_model(name):
         return resnet18 
     elif name == 'r34':
         return resnet34
+    elif name == 'n':
+        return Net
 
 def select_model_amm(name):
     if name == 'r14':
@@ -16,4 +20,6 @@ def select_model_amm(name):
         return resnet18_AMM
     elif name == 'r34':
         return resnet34_AMM
+    elif name == 'n':
+        return Net_AMM
 
