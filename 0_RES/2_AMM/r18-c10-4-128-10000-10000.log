@@ -1,0 +1,8 @@
+Train cosine similarity: [array(0.96396852), array(0.67398096), array(0.34831498), array(0.25317647), array(0.32549999), array(0.45545988), array(0.66262636), array(0.21165878), array(0.12815776), array(0.51388294, dtype=float32)]
+Test cosine similarity: [array(0.95013484), array(0.63615053), array(0.43409852), array(0.26089058), array(0.33465001), array(0.42310865), array(0.64366113), array(0.19336462), array(0.16567106), array(0.5052045, dtype=float32)]
+Train MSE: 35.61204147338867
+Test MSE: 48.887821197509766
+NN - Train accuracy: 0.8918
+NN - Test accuracy: 0.8417
+AMM - Train accuracy: 0.1072
+AMM - Test accuracy: 0.1
