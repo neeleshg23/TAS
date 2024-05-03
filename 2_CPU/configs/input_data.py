@@ -1,7 +1,7 @@
 import csv
 import json
 
-with open('input_data.csv', 'r') as csv_file:
+with open('net_input.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     
     next(csv_reader)
@@ -9,8 +9,8 @@ with open('input_data.csv', 'r') as csv_file:
     for row in csv_reader:
         config_num = row[1]
         
-        s_subspaces = [int(value) for value in row[2:24]]
-        k_prototypes = [int(value) for value in row[24:]]
+        s_subspaces = [int(value) for value in row[2:7]]
+        k_prototypes = [int(value) for value in row[7:]]
         
         json_content = {
             's_subspaces': s_subspaces,

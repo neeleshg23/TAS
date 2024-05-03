@@ -27,7 +27,7 @@ VAL_SPLIT = 0
 def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file): 
     torch.manual_seed(0)
 
-    train_loader, test_loader, num_classes, num_channels = get_data('/data/neelesh/CV_Datasets', dataset, VAL_SPLIT)
+    train_loader, test_loader, num_classes, num_channels = get_data('/data3/neelesh/CV_Datasets', dataset, VAL_SPLIT)
     train_data, train_target = split(train_loader)
     test_data, test_target = split(test_loader)
     
@@ -37,14 +37,14 @@ def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file):
 
     model_amm = select_model_amm(model)(base_model.state_dict(), ncodebook, kcentroid)
     
-    train_fc1_target, train_fc2_target = base_model(train_data)
-    test_fc1_target, test_fc2_target = base_model(test_data)
+    train_fc1_target, train_fc2_target, base_intermediate_train = base_model(train_data)
+    test_fc1_target, test_fc2_target, base_intermediate_test = base_model(test_data)
     
     print("-- Starting Training -- ") 
-    train_res_amm = model_amm.forward_train(train_data, np.asarray(train_fc1_target.detach().numpy()), np.asarray(train_fc2_target.detach().numpy())) 
+    train_res_amm, amm_intermediate_train = model_amm.forward_train(train_data, np.asarray(train_fc1_target.detach().numpy()), np.asarray(train_fc2_target.detach().numpy())) 
     
     print("-- Starting Evaluation -- ")
-    test_res_amm = model_amm.forward_eval(test_data)
+    test_res_amm, amm_intermediate_test = model_amm.forward_eval(test_data)
     
     # get NN accuracy
     train_pred = get_predictions(train_fc2_target.detach().numpy())
@@ -66,7 +66,6 @@ def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file):
     print(f'AMM - Train accuracy: {train_accuracy_amm}')
     print(f'AMM - Test accuracy: {test_accuracy_amm}')
     
-    ''' 
     # get layerwise MSE of intermediate representations
     train_mse = []
     test_mse = []
@@ -94,7 +93,6 @@ def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file):
     config['test_mse'] = [float(x) for x in test_mse]
     with open(config_file, 'w') as file:
         json.dump(config, file, indent=4)
-    '''
 #%%
 def main():
     parser = argparse.ArgumentParser()

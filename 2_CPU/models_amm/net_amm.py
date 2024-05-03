@@ -128,84 +128,6 @@ class Net_AMM:
         res = est.predict(input_data, weights) + bias
         return res
     
-    def dropout(self, input, p):
-        binary_value = np.random.rand(*input.shape) > p
-        res = input * binary_value
-        res /= p
-        return res
-    
-    def forward_train(self, x, target1, target2):
-        intermediate_results = []
-
-        out = self.conv2d_amm(x, self.conv1_weights, self.conv1_bias, pad=1)
-        out = self.relu(out)
-        out = torch.from_numpy(out).float() 
-        out = self.pool(out)
-        out = out.detach().numpy()
-        
-        out = self.conv2d_amm(out, self.conv2_weights, self.conv2_bias, pad=1)
-        out = self.relu(out)
-        out = torch.from_numpy(out).float()
-        out = self.pool(out)
-        out = out.detach().numpy()
-        
-        out = self.conv2d_amm(out, self.conv3_weights, self.conv3_bias, pad=1)
-        out = self.relu(out)
-        out = torch.from_numpy(out).float()
-        out = self.pool(out)
-        out = out.detach().numpy()
-        
-        # flatten image input
-        out = out.reshape(out.shape[0], -1)
-        
-        out = self.linear_amm(out, self.fc1_weights.T, self.fc1_bias, target1)
-        out = self.relu(out)
-        
-        out = self.dropout(out, 0.25)
-        
-        out = self.linear_amm(out, self.fc2_weights.T, self.fc2_bias, target2)
-        
-        return out
-        
-    def forward_eval(self, x):
-        intermediate_results = []
-        
-        
-        est = self.amm_estimators.pop(0)
-        out = self.conv2d_eval(est, x, self.conv1_weights, self.conv1_bias, pad=1)
-        out = self.relu(out)
-        out = torch.from_numpy(out).float() 
-        out = self.pool(out)
-        out = out.detach().numpy()
-        
-        est = self.amm_estimators.pop(0) 
-        out = self.conv2d_eval(est, out, self.conv2_weights, self.conv2_bias, pad=1)
-        out = self.relu(out)
-        out = torch.from_numpy(out).float()
-        out = self.pool(out)
-        out = out.detach().numpy()
-        
-        est = self.amm_estimators.pop(0) 
-        out = self.conv2d_eval(est, out, self.conv3_weights, self.conv3_bias, pad=1)
-        out = self.relu(out)
-        out = torch.from_numpy(out).float()
-        out = self.pool(out)
-        out = out.detach().numpy()
-        
-        # flatten image input
-        out = out.reshape(out.shape[0], -1)
-        
-        est = self.amm_estimators.pop(0) 
-        out = self.linear_eval(est, out, self.fc1_weights.T, self.fc1_bias)
-        out = self.relu(out)
-        
-        out = self.dropout(out, 0.25)
-        
-        est = self.amm_estimators.pop(0) 
-        out = self.linear_eval(est, out, self.fc2_weights.T, self.fc2_bias)
-        
-        return out
-    
     def fine_tune_fc_layer(self, new_input, weight, bias, target, epoch=300, lr=0.001):
         
         linear_layer = nn.Linear(weight.shape[0], weight.shape[1])
@@ -229,7 +151,92 @@ class Net_AMM:
             if loss.item() < 1e-5:
                 break
         
-        # use dlpack to convert to cupy array
         new_weight, new_bias = linear_layer.weight.detach().numpy(), linear_layer.bias.detach().numpy()
         return new_weight.T, new_bias  # Transpose back the weight matrix
+        
+    def dropout(self, input, p):
+        binary_value = np.random.rand(*input.shape) > p
+        res = input * binary_value
+        res /= p
+        return res
+    
+    def forward_train(self, x, target1, target2):
+        intermediate_results = []
 
+        out = self.conv2d_amm(x, self.conv1_weights, self.conv1_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float() 
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        out = self.conv2d_amm(out, self.conv2_weights, self.conv2_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        out = self.conv2d_amm(out, self.conv3_weights, self.conv3_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        # flatten image input
+        out = out.reshape(out.shape[0], -1)
+        
+        out = self.linear_amm(out, self.fc1_weights.T, self.fc1_bias, target1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        
+        out = self.dropout(out, 0.25)
+        
+        out = self.linear_amm(out, self.fc2_weights.T, self.fc2_bias, target2)
+        intermediate_results.append(out)
+        
+        return out, intermediate_results
+        
+    def forward_eval(self, x):
+        intermediate_results = []
+        
+        est = self.amm_estimators.pop(0)
+        out = self.conv2d_eval(est, x, self.conv1_weights, self.conv1_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float() 
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        est = self.amm_estimators.pop(0) 
+        out = self.conv2d_eval(est, out, self.conv2_weights, self.conv2_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        est = self.amm_estimators.pop(0) 
+        out = self.conv2d_eval(est, out, self.conv3_weights, self.conv3_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        # flatten image input
+        out = out.reshape(out.shape[0], -1)
+        
+        est = self.amm_estimators.pop(0) 
+        out = self.linear_eval(est, out, self.fc1_weights.T, self.fc1_bias)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        
+        out = self.dropout(out, 0.25)
+        
+        est = self.amm_estimators.pop(0) 
+        out = self.linear_eval(est, out, self.fc2_weights.T, self.fc2_bias)
+        intermediate_results.append(out)
+        
+        return out, intermediate_results

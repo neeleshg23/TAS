@@ -20,19 +20,32 @@ class Net(nn.Module):
         self.dropout = nn.Dropout(0.25)
 
     def forward(self, x):
+        intermediate = []
+        
         # add sequence of convolutional and max pooling layers
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
+        x = self.conv1(x)
+        intermediate.append(x.detach().numpy())
+        x = self.pool(F.relu(x))
+        
+        x = self.conv2(x)
+        intermediate.append(x.detach().numpy())
+        x = self.pool(F.relu(x))
+        
+        x = self.conv3(x)
+        intermediate.append(x.detach().numpy())
+        x = self.pool(F.relu(x))
+        
         # flatten image input
         x = x.view(-1, 64 * 4 * 4)
         # add dropout layer
         x = self.dropout(x)
         # add 1st hidden layer, with relu activation function
         target1 = self.fc1(x)
+        intermediate.append(target1.detach().numpy())
         x = F.relu(target1)
         # add dropout layer
         x = self.dropout(x)
         # add 2nd hidden layer, with relu activation function
         x = self.fc2(x)
-        return target1, x
+        intermediate.append(x.detach().numpy()) 
+        return target1, x, intermediate
