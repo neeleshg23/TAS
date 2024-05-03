@@ -160,6 +160,43 @@ class Net_AMM:
         res /= p
         return res
     
+    def forward(self, x):
+        intermediate_results = []
+        out = self.conv2d(x, self.conv1_weights, self.conv1_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        out = self.conv2d(out, self.conv2_weights, self.conv2_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        out = self.conv2d(out, self.conv3_weights, self.conv3_bias, pad=1)
+        intermediate_results.append(out)
+        out = self.relu(out)
+        out = torch.from_numpy(out).float()
+        out = self.pool(out)
+        out = out.detach().numpy()
+        
+        # flatten image input
+        out = out.reshape(out.shape[0], -1)
+        
+        out = np.dot(out, self.fc1_weights.T) + self.fc1_bias   
+        intermediate_results.append(out)
+        out = self.relu(out)
+        
+        # out = self.dropout(out, 0.25)
+        
+        out = np.dot(out, self.fc2_weights.T) + self.fc2_bias
+        intermediate_results.append(out)
+        
+        return out, intermediate_results
+    
     def forward_train(self, x, target1, target2):
         intermediate_results = []
 
@@ -191,7 +228,7 @@ class Net_AMM:
         intermediate_results.append(out)
         out = self.relu(out)
         
-        out = self.dropout(out, 0.25)
+        # out = self.dropout(out, 0.25)
         
         out = self.linear_amm(out, self.fc2_weights.T, self.fc2_bias, target2)
         intermediate_results.append(out)
@@ -233,7 +270,7 @@ class Net_AMM:
         intermediate_results.append(out)
         out = self.relu(out)
         
-        out = self.dropout(out, 0.25)
+        # out = self.dropout(out, 0.25)
         
         est = self.amm_estimators.pop(0) 
         out = self.linear_eval(est, out, self.fc2_weights.T, self.fc2_bias)

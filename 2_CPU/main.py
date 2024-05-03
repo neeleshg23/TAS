@@ -27,10 +27,13 @@ VAL_SPLIT = 0
 def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file): 
     torch.manual_seed(0)
 
-    train_loader, test_loader, num_classes, num_channels = get_data('/data3/neelesh/CV_Datasets', dataset, VAL_SPLIT)
+    train_loader, test_loader, num_classes, num_channels = get_data('/data/neelesh/CV_Datasets', dataset, VAL_SPLIT)
     train_data, train_target = split(train_loader)
     test_data, test_target = split(test_loader)
     
+    train_data, train_target = train_data[:1024], train_target[:1024]
+    test_data, test_target = test_data[:1000], test_target[:1000]
+
     base_model = select_model(model)()
     base_model.load_state_dict(torch.load(f'../0_RES/1_NN/{model}-{dataset}.pth', map_location=torch.device('cpu')))
     base_model.eval()
@@ -41,10 +44,12 @@ def run_experiment_mask(model, dataset, ncodebook, kcentroid, config_file):
     test_fc1_target, test_fc2_target, base_intermediate_test = base_model(test_data)
     
     print("-- Starting Training -- ") 
-    train_res_amm, amm_intermediate_train = model_amm.forward_train(train_data, np.asarray(train_fc1_target.detach().numpy()), np.asarray(train_fc2_target.detach().numpy())) 
+    train_res_amm, amm_intermediate_train = model_amm.forward_train(train_data, np.asarray(train_fc1_target.detach().numpy()), np.asarray(train_fc2_target.detach().numpy()))
+    # train_res_amm, amm_intermediate_train = model_amm.forward(train_data) 
     
     print("-- Starting Evaluation -- ")
     test_res_amm, amm_intermediate_test = model_amm.forward_eval(test_data)
+    # test_res_amm, amm_intermediate_test = model_amm.forward(test_data)
     
     # get NN accuracy
     train_pred = get_predictions(train_fc2_target.detach().numpy())

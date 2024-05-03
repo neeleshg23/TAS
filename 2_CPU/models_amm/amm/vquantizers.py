@@ -217,7 +217,7 @@ def _learn_centroids(X, ncentroids, ncodebooks, subvect_len):
         X_in = X[:, start_col:end_col]
         # centroids, labels = kmeans(X_in, ncentroids)
         # centroids, labels, sse = kmeans(X_in, ncentroids, return_sse=True)
-        kmeans = Kmeans(d=subvect_len, k=ncentroids, niter=10)
+        kmeans = Kmeans(d=subvect_len, k=ncentroids, niter=5)
         kmeans.train(X_in)
         centroids = kmeans.centroids
         labels = kmeans.index.search(X_in, 1)[1].flatten()
